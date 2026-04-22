@@ -20,18 +20,29 @@ export default function ContactImporter() {
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-      let parsedContacts = rows.slice(1).map((row) => ({
-        name: row[0],
-        area: row[1],
-        phone: row[2],
-      }));
+      // let parsedContacts = rows.slice(1).map((row) => ({
+      //   name: row[0],
+      //   area: row[1],
+      //   phone: row[2],
+      // }));
+      let parsedContacts = rows
+        .slice(1)
+        .filter(row => row[2]) // remove empty phone rows
+        .map((row) => ({
+          name: row[0] || "No Name",
+          area: row[1] || "",
+          phone: row[2].toString().replace(/\s+/g, ""), // remove spaces
+        }));
+
+       
 
       // 1️⃣ Add country code
       parsedContacts = parsedContacts.map((c) => ({
         ...c,
-        phone: c.phone?.toString().startsWith("+91")
-          ? c.phone
-          : "+91" + c.phone,
+       phone: c.phone.startsWith("+91")
+  ? c.phone
+  : "+91" + c.phone.replace(/^0+/, "")
+          
       }));
 
       // 2️⃣ Remove duplicate numbers
